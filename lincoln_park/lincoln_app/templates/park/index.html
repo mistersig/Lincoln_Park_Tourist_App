@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+<head>
+	
+<meta charset="utf-8">
+
+            <title>Lincoln Park Tourist App </title>
+          
+            <!-- leaflet css --> 
+            {% load static %} 
+            <link rel="stylesheet" href="{% static "css/style.css" %}" />
+            <link rel="stylesheet" href="{% static "leaflet/leaflet.css" %}"/>
+            <script src= "{% static "leaflet/leaflet.js" %}"></script>
+            <link rel="stylesheet"  href="{% static "lib/leaflet-search-master/src/leaflet-search.css" %}">
+            <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" crossorigin="anonymous">
+    <!-- Our Custom CSS -->
+            <!-- <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css"> -->
+            <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.1/dist/leaflet.css" />
+
+
+            <!-- integrity="sha512-+ZaXMZ7sjFMiCigvm8WjllFy6g3aou3+GZngAtugLzrmPFKFK7yjSri0XnElvCTu/PrifAYQuxZTybAEkA8VOA=="crossorigin=""/> -->
+            
+
+            <script src="{% static "leaflet/leaflet.js" %}"
+            integrity="sha512-+ZaXMZ7sjFMiCigvm8WjllFy6g3aou3+GZngAtugLzrmPFKFK7yjSri0XnElvCTu/PrifAYQuxZTybAEkA8VOA=="crossorigin=""></script>
+            <script src="https://unpkg.com/leaflet@1.0.1/dist/leaflet.js"></script>
+
+    
+    </head>
+    
+    <body>
+<!-- Header (Navigation Bar) -->
+<nav class="navbar navbar-default">
+    <div class="navbar-header">
+        <a class="navbar-brand" href="#"></a>
+</nav>
+
+<div class="wrapper">
+
+    <!-- Sidebar -->
+    <nav id="sidebar">
+        <div class="sidebar-header">
+            <h3>Lincoln Park App</h3>
+        </div>
+        
+        <ul class="nav nav-tabs">
+          <li class="active"><a href="#find-user-location" data-toggle="tab">Where You At?!?!?!         </a></li>
+          <br></br>
+          <li><a href="#instagram-rip" data-toggle="tab">LinkNgram</a></li>
+        </ul>
+
+        <div class="tab-content ">
+          <!-- Panel for Find Location -->
+          <div class="tab-pane active" id="find-user-location">
+            <form id = "find-user-location-form">
+              <br></br>
+
+              <div class="btn-group-toggle" data-toggle="buttons">
+                <label class="btn primary active" id="top-button">
+                  <p id = "locate">Find my location</p>
+                </label>
+              </div>
+
+              <br></br>
+              <div class="btn-group-toggle" data-toggle="buttons">
+                <label class="btn btn-secondary active">
+                  <div id="loader"></div>
+                  <p id = "find-nearest">Near Me</p>
+                </label>
+              </div>
+              <br></br>
+            </form>
+          </div><!-- end of class tab-pane -->
+
+          <!-- Start of Instagram Copy-cat -->
+          <div class="tab-pane" id="instagram-rip">
+            
+            <form id ="instagram-rip-form" method="POST">
+              {% csrf_token %}
+              <br></br>
+              <div class="btn-group-toggle" data-toggle="buttons">
+                <label class="btn btn-secondary active">
+                  <div id="locater"></div>
+                  
+                  <p id = "LincolnParkLocation">Get Location for Submission</p>
+                </label>
+              </div>
+              <div>
+                <label>Photo ID:&nbsp</label>
+                <input type="number placeholder="Unique Name" id="ids" name="ids">
+              </div>              
+              <div>
+                <label>Caption:&nbsp</label>
+                <input placeholder="Small Description" id="caption" name="caption">
+              </div>
+              
+              <div>
+                <label>Image:&nbsp</label>
+                <!-- <label for="fileupload"> Select a file to upload</label> -->
+                <input type="file" name="fileupload" value="Select Image" id="fileupload"> 
+                <!-- <input type="text" name="filePath">  -->
+              </div>
+
+              <div>
+                <div>
+                  <label >Latitude:&nbsp</label>
+                  <input type="number" step="0.000000000000001" name="latitude" id="lats" >
+                </div>
+                
+                <div>
+                  <label>Longitude:&nbsp</label>
+                  <input type="number" step="0.000000000000001" name="longitude" id="longs">
+                </div>
+                <br>
+                <input type="submit">
+
+              </div>
+              
+            </form>
+
+<!--             <form method="POST">
+              {% csrf_token %}
+              {{ form.as_p }}
+              <label for="in_name">Enter name: </label>
+              <input id="in_name" type="text" name="in_name">
+              <input type="submit">
+            </form>
+ -->
+
+
+
+
+
+          </div>
+        </div> <!-- end of tab-content -->
+    </nav>
+
+    <!-- Page Content -->
+    <div id="content">
+
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <div class="container-fluid">
+<!-- 
+                <button type="button" id="sidebarCollapse" class="btn btn-info">
+                    <i class="fas fa-align-left"></i>
+                    <span>Toggle Sidebar</span>
+                </button> -->
+                <div id="mapid" > </div>
+            </div>
+        </nav>
+    </div>
+<!--     <div id="content">
+        <div id="mapid" class="col-md-9 col-xs-9"> </div>
+        
+    </div>
+ -->
+</div>       
+
+
+
+
+
+<!-- <div id="mapid"></div> -->
+<!-- Make sure you put this AFTER Leaflet's CSS -->
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+ 
+<!-- <script type="text/javascript" src="{% static "lib/jquery.js" %}"></script> -->
+<script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha256-cCueBR6CsyA4/9szpPfrX3s49M9vUU5BgtiJj06wt/s=" crossorigin="anonymous"></script>
+
+<script type="text/javascript" src="{% static "lib/leaflet-search-master/src/leaflet-search.js" %}"></script>
+
+
+
+
+
+<!-- <script type="text/javascript" src="{% static "js/basemap.js" %}"></script> -->
+<script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.0/js/bootstrap.min.js"></script>
+
+
+<script type="text/javascript" >
+
+
+
+function initialization() {
+  //get request done through DJANGO 
+
+  var response = {{ art|safe }};
+  var response2 = {{ food|safe }};
+  var response3 = {{ sports|safe }};
+  var response4 = {{ water|safe }};
+  var response5 = {{ zoo|safe }};
+  var response6 = {{ all_data_layer|safe }};
+  var response7 = {{ pictures|safe }};
+
+  // var response = "{{art}}";
+  // var response2 = "{{ food }}";
+  // var response3 = "{{ sports }}";
+  // var response4 = "{{ water }}";
+  // var response5 = "{{ zoo }}";
+  // var response6 = "{{ all_data_layer }}";
+
+
+  console.log(response7);
+
+
+
+
+
+  //map id
+  var mymap = L.map('mapid').setView([41.918873, -87.631077], 15); //38.724066, -99.262098 //
+  
+  //base map OSM SWEDEN STYLE
+  //deprecated
+//   var Hydda_Full = L.tileLayer('https://{s}.tile.openstreetmap.se/hydda/full/{z}/{x}/{y}.png', {
+//   maxZoom: 18,
+//   attribution: 'Tiles courtesy of <a href="http://openstreetmap.se/" target="_blank">OpenStreetMap Sweden</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+// }).addTo(mymap);
+
+//CARTODB
+var CartoDB_PositronNoLabels = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
+  attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+  subdomains: 'abcd',
+  maxZoom: 19
+}).addTo(mymap);
+  
+
+
+  var baseMaps = {
+        "Streets": CartoDB_PositronNoLabels
+    }; 
+
+    var layer = L.geoJSON(response, {pointToLayer: function (feature, latlng) {
+    var geojsonMarkerOptions = {
+    radius: 7,
+    fillColor: "#330066",
+    color: "#000", //purple
+    weight: 1,
+    opacity: 1,
+    fillOpacity: .5
+  };
+    var popUpContent = feature.properties["place_name"];
+    // console.log(feature);
+    // popUpContent += feature.properties["artist_name"];
+    layer = L.circleMarker(latlng,geojsonMarkerOptions);
+    layer.bindPopup(popUpContent,{offset: new L.point(0,0), maxWidth: 560
+    });
+        layer.on({
+    mouseover: function(){
+        this.openPopup();
+    },
+    mouseout: function(){
+        this.closePopup();
+    },
+    click: function(){
+        layer.on(popUpContent);
+    }
+    });
+    
+    // return layer.addTo(mymap);
+    return layer
+  } 
+  }) //end of layer1
+
+    var layer2 = L.geoJSON(response2, {pointToLayer: function (feature, latlng) {
+    var geojsonMarkerOptions = {
+    radius: 7,
+    fillColor: '#FFD700', //yellow
+    color: "#000", 
+    weight: 1,
+    opacity: 1,
+    fillOpacity: .5
+  };
+
+    var popUpContent = feature.properties["place_name"];
+    // console.log(feature);
+    // popUpContent += feature.properties["artist_name"];
+    layer2 = L.circleMarker(latlng,geojsonMarkerOptions);
+    layer2.bindPopup(popUpContent,{offset: new L.point(0,0), maxWidth: 560
+    });
+        layer2.on({
+    mouseover: function(){
+        this.openPopup();
+    },
+    mouseout: function(){
+        this.closePopup();
+    },
+    click: function(){
+        layer2.on(popUpContent);
+    }
+    });
+    // return L.circleMarker(latlng, geojsonMarkerOptions).addTo(mymap);
+    // return layer2.addTo(mymap);
+    return layer2
+  } 
+  }) //end of layer2
+
+  var layer3 = L.geoJSON(response3, {pointToLayer: function (feature, latlng) {
+    var geojsonMarkerOptions = {
+    radius: 7,
+    fillColor: "#F6546A",//pink red hot
+    color: "#000", 
+    weight: 1,
+    opacity: 1,
+    fillOpacity: .5
+  };
+
+    var popUpContent = feature.properties["place_name"];
+    // console.log(feature);
+    // popUpContent += feature.properties["artist_name"];
+    layer3 = L.circleMarker(latlng,geojsonMarkerOptions);
+    layer3.bindPopup(popUpContent,{offset: new L.point(0,0), maxWidth: 560
+    });
+        layer3.on({
+    mouseover: function(){
+        this.openPopup();
+    },
+    mouseout: function(){
+        this.closePopup();
+    },
+    click: function(){
+        layer3.on(popUpContent);
+    }
+    });
+    // return L.circleMarker(latlng, geojsonMarkerOptions).addTo(mymap);
+    // return layer3.addTo(mymap);
+    return layer3
+  } 
+  }) //end of layer1
+
+  var layer4 = L.geoJSON(response4, {pointToLayer: function (feature, latlng) {
+    var geojsonMarkerOptions = {
+    radius: 7,
+    fillColor: "#3399FF",//blue
+    color: "#000", 
+    weight: 1,
+    opacity: 1,
+    fillOpacity: .5
+  };
+    var popUpContent = feature.properties["place_name"];
+    // console.log(feature);
+    // popUpContent += feature.properties["artist_name"];
+    layer4 = L.circleMarker(latlng,geojsonMarkerOptions);
+    layer4.bindPopup(popUpContent,{offset: new L.point(0,0), maxWidth: 560
+    });
+        layer4.on({
+    mouseover: function(){
+        this.openPopup();
+    },
+    mouseout: function(){
+        this.closePopup();
+    },
+    click: function(){
+        layer4.on(popUpContent);
+    }
+    });
+    // layer4 = L.layerGroup(layer4);
+    // return L.circleMarker(latlng, geojsonMarkerOptions).addTo(mymap);
+    // return layer4.addTo(mymap);
+    return layer4
+  } 
+  }) //end of layer2
+  //zoo
+  var layer5 = L.geoJSON(response5, {pointToLayer: function (feature, latlng) {
+    var geojsonMarkerOptions = {
+    radius: 7,
+    fillColor: "#7FBFBF", //teal
+    color: "#000", 
+    weight: 1,
+    opacity: 1,
+    fillOpacity: .5
+  };
+
+    var popUpContent = feature.properties["place_name"];
+    // console.log(feature);
+    // popUpContent += feature.properties["artist_name"];
+    layer5 = L.circleMarker(latlng,geojsonMarkerOptions);
+    layer5.bindPopup(popUpContent,{offset: new L.point(0,0), maxWidth: 560
+    });
+        layer5.on({
+    mouseover: function(){
+        this.openPopup();
+    },
+    mouseout: function(){
+        this.closePopup();
+    },
+    click: function(){
+        layer5.on(popUpContent);
+    }
+    });
+    // return L.circleMarker(latlng, geojsonMarkerOptions).addTo(mymap);
+    // return layer5.addTo(mymap);
+    return layer5
+  } 
+  }) //end of layer5
+
+
+  var layer6 = L.geoJSON(response6, {pointToLayer: function (feature, latlng) {
+    var geojsonMarkerOptions = {
+    radius: 7,
+    fillColor: "#000", //teal
+    color: "#000", 
+    weight: 1,
+    opacity: 1,
+    fillOpacity: .5
+  };
+
+    var popUpContent = feature.properties["icon_name"];
+    // console.log(feature);
+    // popUpContent += feature.properties["artist_name"];
+    layer6 = L.circleMarker(latlng,geojsonMarkerOptions);
+    layer6.bindPopup(popUpContent,{offset: new L.point(0,0), maxWidth: 560
+    });
+        layer6.on({
+    mouseover: function(){
+        this.openPopup();
+    },
+    mouseout: function(){
+        this.closePopup();
+    },
+    click: function(){
+        layer6.on(popUpContent);
+    }
+    });
+    // return L.circleMarker(latlng, geojsonMarkerOptions).addTo(mymap);
+    // return layer5.addTo(mymap);
+    return layer6
+  } 
+  }) //end of layer6
+  // console.log(layer7);
+  var layer7 = L.geoJSON(response7, {pointToLayer: function (feature, latlng) {
+    var geojsonMarkerOptions = {
+    radius: 7,
+    fillColor: "#8a3ab9", //teal
+    color: "#000", 
+    weight: 1,
+    opacity: 1,
+    fillOpacity: .5
+  };
+
+    // var popUpContent = feature.properties["image"];
+    // console.log(feature);
+    // popUpContent += "<img src='/Users/sig/Desktop/project_2_park_app/images/" +feature.properties["image"]+ "'>";
+    // popUpContent += feature.properties.popupContent;
+    var popUpContent = "<img src='/Users/sig/Desktop/project_2_park_app/images/" +feature.properties["image"]+ "'>";
+    popUpContent += feature.properties["image"];
+    
+    
+    layer7 = L.circleMarker(latlng,geojsonMarkerOptions);
+
+    layer7.bindPopup(popUpContent,{offset: new L.point(0,0), maxWidth: 560
+    });
+        layer7.on({
+    mouseover: function(){
+        this.openPopup();
+    },
+    mouseout: function(){
+        this.closePopup();
+    },
+    click: function(){
+        layer7.on(popUpContent);
+    }
+    });
+    // return L.circleMarker(latlng, geojsonMarkerOptions).addTo(mymap);
+    // return layer5.addTo(mymap);
+    return layer7
+  } 
+  }) //end of layer6
+
+
+    // var map = L.map("map");
+
+    // L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    //   attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+    // }).addTo(map);
+
+    // var picURL2 = 'http://www.lib.utexas.edu/maps/historical/newark_nj_1922.jpg',
+    //   imageBounds = [
+    //     [55.1, 11.6],
+    //     [55.0, 11.74644]
+    //   ];
+    // var layer = L.imageOverlay(picURL2, imageBounds).addTo(map);
+
+    // map.fitBounds(layer.getBounds());
+    
+    // var shelter1 = L.marker([55.0, 11.74644]).addTo(map);
+
+    // shelter1.bindPopup("<img src='" + picURL2 + "'/>").openPopup();
+
+
+
+// console.log(layer7);
+
+  // console.log(layer);
+  // console.log(layer2);
+  // console.log(layer3);
+  // console.log(layer4);
+  // console.log(layer5);
+// var testq = L.featureGroup([layer,layer2,layer3,layer4,layer5]);
+// console.log(testq);
+
+
+  var response = {{ art|safe }};
+  var response2 = {{ food|safe }};
+  var response3 = {{ sports|safe }};
+  var response4 = {{ water|safe }};
+  var response5 = {{ zoo|safe }};
+
+  // var response = "{{ art|safe }}";
+  // var response2 = "{{ food|safe }}";
+  // var response3 = "{{ sports|safe }}";
+  // var response4 = "{{ water|safe }}";
+  // var response5 = "{{ zoo|safe }}";
+  
+
+
+
+  // var poiLayers = L.layerGroup([
+  //   L.geoJson(bar, geojsonOpts),
+  //   L.geoJson(pharmacy, geojsonOpts),
+  //   L.geoJson(restaurant, geojsonOpts)
+  // ])
+  // .addTo(map);
+
+  // L.control.search({
+  //   layer: poiLayers,
+  //   initial: false,
+  //   propertyName: 'name',
+    // buildTip: function(text, val) {
+    //   var type = val.layer.feature.properties.amenity;
+    //   return '<a href="#" class="'+type+'">'+text+'<b>'+type+'</b></a>';
+    // }
+  // })
+  // .addTo(map);
+
+
+  var groupedOverlays = {
+    "Public Art": layer,
+    "Food Options": layer2,
+    "Physical Activities": layer3,
+    "Water Based Activites": layer4,
+    "Zoo": layer5,
+    "Distance Calculations":layer6,
+    "Images":layer7
+  };
+
+
+console.log(groupedOverlays);
+
+var rachael = L.featureGroup([layer,layer2,layer3,layer4,layer5]);
+
+console.log(rachael);
+
+
+  L.control.layers(baseMaps,groupedOverlays).addTo(mymap);
+
+
+
+var searchControl = new L.Control.Search(
+            {
+             // position:'topright',
+             layer: L.featureGroup([layer,layer2,layer3,layer4,layer5]),
+             initial: false,
+             propertyName: 'place_name',
+             zoom: 17,
+             tooltipLimit: 7,
+             textPlaceholder: "Search it all",
+             textErr: "Please try to spell it correctly",
+             autoCollapse: true,
+             buildTip: function(text, val) {
+              var type = val.layer.feature.properties.activity_type;
+              return '<a href="#" class="'+type+'">'+text+'<b>'+type+'</b></a>';
+    }
+            });
+        
+        //add zoom search to map
+        mymap.addControl(searchControl);
+
+  searchControl.on('search:locationfound', function (e){
+            e.layer.openPopup();
+        });
+
+//this is the location app 
+var $locate = $('#locate');
+$status = $('#status');
+$body = $('body');
+var zoomLevel = 15;
+$findNearest = $('#find-nearest');
+
+
+
+
+
+
+// var layers_distance = L.layerGroup(groupedOverlays);
+
+
+// console.log(layers_distance.toGeoJSON());
+
+
+$locate.fadeIn().on('click', function(e) {
+            
+            $status.html('finding your location');
+            
+            if (!navigator.geolocation){
+                alert("<p>Sorry, your browser does not support Geolocation</p>");
+                return;
+            }
+            
+            $body.removeClass('loaded');
+              
+            navigator.geolocation.getCurrentPosition(success, error);
+            
+           $locate.fadeOut();
+            
+        });   
+    function success(position) {
+        
+        $body.addClass('loaded');
+        
+        var currentPos = [position.coords.latitude,position.coords.longitude];
+        
+        mymap.setView(currentPos, zoomLevel);
+
+        var myLocation = L.marker(currentPos)
+                            .addTo(mymap)
+                            .bindTooltip("you are here")
+                            .openTooltip();
+        
+            
+        $findNearest.fadeIn()
+            .on('click', function(e) {
+                
+                $findNearest.fadeOut();
+                
+                $status.html('finding your nearest locations')
+            
+                queryFeatures(currentPos, 5);
+            
+                myLocation.unbindTooltip();
+            
+                
+        });
+
+    };
+        function error() {
+        alert("Unable to retrieve your location");
+    };
+
+    function queryFeatures(currentPos, numResults) {
+        
+        var distances = [];
+        
+        layer6.eachLayer(function(l) {
+            
+            var distance = L.latLng(currentPos).distanceTo(l.getLatLng())/1000;
+            
+            distances.push(distance);
+
+        });
+        
+        
+        distances.sort(function(a, b) {
+            return a - b;
+        });
+        
+        var stationsLayer = L.featureGroup();
+            
+
+        layer6.eachLayer(function(l) {
+            
+            var distance = L.latLng(currentPos).distanceTo(l.getLatLng())/1000;
+            
+            if(distance < distances[numResults]) {
+                
+                l.bindTooltip(distance.toLocaleString() + ' km from current location.');
+                
+                L.polyline([currentPos, l.getLatLng()], {
+                    color : 'orange',
+                    weight : 2,
+                    opacity: 1,
+                    dashArray : "5, 10"
+                }).addTo(stationsLayer);
+                
+            }
+        });
+        
+
+        
+        mymap.flyToBounds(stationsLayer.getBounds(), {duration : 3, easeLinearity: .1 });
+        
+        mymap.on('zoomend', function() {
+          
+            mymap.addLayer(stationsLayer);
+        })
+
+
+      
+    }
+
+
+var $LincolnParkLocalizer = $('#LincolnParkLocation');
+
+$LincolnParkLocalizer.on('click', function() {
+  // console.log(myLocation);
+    enableAddMarker();
+});
+
+function enableAddMarker() {
+    mymap.on('click', addMarker)
+}
+
+function addMarker(e) {
+    var Marker = L.marker(e.latlng,{
+         draggable: true
+    })
+    Marker.addTo(mymap);
+    var curPos = Marker.getLatLng();
+
+    document.getElementById("lats").value = curPos.lat;
+    document.getElementById("longs").value = curPos.lng;
+    // console.log(Marker);
+    mymap.off('click', addMarker);
+
+}
+
+//user location 
+
+
+
+
+} //end of something 
+
+
+$(document).ready(initialization);
+</script>
+
+    </body>
+</html>
